@@ -1,6 +1,5 @@
 #pragma once
 #include <array>
-#include <eigen3/Eigen/Dense>
 #include <iostream>
 
 template<typename xType, typename yType, unsigned int N>
