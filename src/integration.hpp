@@ -13,7 +13,32 @@ template<typename T>
 using Dif = decltype(std::declval<T>() - std::declval<T>());
 
 
+template<std::size_t N>
+constexpr std::array<double, N> points();
 
+template<std::size_t N>
+constexpr std::array<double, N> weights();
+
+template<>
+constexpr std::array<double, 3> points<3>(){
+    return {-0.77459666924148338, 0, 0.77459666924148338};
+}
+
+template<>
+constexpr std::array<double, 3> weights<3>(){
+    return  {0.5555555555555556, 0.8888888888888889,0.5555555555555556};
+}
+
+
+template<>
+constexpr std::array<double, 4> points<4>(){
+    return {-0.8611363115940526, -0.3399810435848562, 0.3399810435848562, 0.8611363115940526};
+}
+
+template<>
+constexpr std::array<double, 4> weights<4>(){
+    return  {0.3478548451374538, 0.8611363115940526, 0.8611363115940526, 0.3478548451374538};
+}
 
 
 /* Функция производит интегрирование на одном отрезке */
@@ -22,24 +47,15 @@ decltype(auto) integrate(
     const Callable& func,  // Интегрируемая функция
     const typename ArgumentGetter<Callable>::Argument& start,  // начало отрезка
     const typename ArgumentGetter<Callable>::Argument& end  // конец отрезка
-    ){
-    std::array<typename ArgumentGetter<Callable>::Argument, 4> x;
-	std::array<typename ArgumentGetter<Callable>::Argument, 4> weights;                       
-    if (N == 3){
-        x = {-0.77459666924148338, 0, 0.77459666924148338, 0};
-        weights = {0.5555555555555556, 0.8888888888888889,0.5555555555555556, 0};
-    } else if (N == 4){
-        x = {-0.8611363115940526, -0.3399810435848562, 0.3399810435848562, 0.8611363115940526};
-        weights = {0.3478548451374538, 0.8611363115940526, 0.8611363115940526, 0.3478548451374538};
-    }
-    typename ArgumentGetter<Callable>::Argument sum = 0;
-	for(size_t i = 0; i < N; i++)
-		sum += weights[i] * func(x[i] * (end - start) / 2 + (end + start) / 2);
+    ){                    
+    constexpr auto x = points<N>();
+    constexpr auto w = weights<N>();
+    typename ArgumentGetter<Callable>::Argument sum =  w[0] * func(x[0] * (end - start) / 2 + (end + start) / 2);
+	for(size_t i = 1; i < N; i++)
+		sum += w[i] * func(x[i] * (end - start) / 2 + (end + start) / 2);
     return (end - start) / 2 * sum;
     }
-
-
-                        
+      
 
 /* Функция производит интегрирование, разбивая отрезок на подотрезки длиной не более dx */
 template<typename Callable, std::size_t N>
